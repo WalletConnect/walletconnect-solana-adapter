@@ -1,11 +1,11 @@
 import type { Transaction } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import QRCodeModal from '@walletconnect/qrcode-modal';
 import WalletConnectClient from '@walletconnect/sign-client';
 import type { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError, parseAccountId } from '@walletconnect/utils';
 import base58 from 'bs58';
-import { ClientNotInitializedError, QRCodeModalError } from './errors.js';
+import { ClientNotInitializedError } from './errors.js';
+import { Web3Modal } from '@web3modal/standalone';
 
 export interface WalletConnectWalletAdapterConfig {
     network: WalletConnectChainID;
@@ -48,6 +48,12 @@ export class WalletConnectWallet {
     }
 
     async connect(): Promise<WalletConnectWalletInit> {
+        const web3Modal = new Web3Modal({
+            walletConnectVersion: 2,
+            projectId: this._options.projectId!,
+            standaloneChains: [this._network],
+        });
+
         const client = this._client ?? (await WalletConnectClient.init(this._options));
         const sessions = client.find(getConnectParams(this._network)).filter((s) => s.acknowledged);
         if (sessions.length) {
@@ -63,9 +69,7 @@ export class WalletConnectWallet {
             const { uri, approval } = await client.connect(getConnectParams(this._network));
             return new Promise((resolve, reject) => {
                 if (uri) {
-                    QRCodeModal.open(uri, () => {
-                        reject(new QRCodeModalError());
-                    });
+                    web3Modal.openModal({ uri, standaloneChains: [this._network] });
                 }
 
                 approval()
@@ -78,7 +82,7 @@ export class WalletConnectWallet {
                     })
                     .catch(reject)
                     .finally(() => {
-                        QRCodeModal.close();
+                        web3Modal.closeModal();
                     });
             });
         }
