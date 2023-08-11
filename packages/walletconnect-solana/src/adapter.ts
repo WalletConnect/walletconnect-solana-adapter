@@ -1,5 +1,5 @@
 import { Transaction, VersionedTransaction, PublicKey } from '@solana/web3.js';
-import QRCodeModal from '@walletconnect/qrcode-modal';
+import { WalletConnectModal } from '@walletconnect/modal';
 import WalletConnectClient from '@walletconnect/sign-client';
 import type { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError, parseAccountId } from '@walletconnect/utils';
@@ -52,37 +52,36 @@ export class WalletConnectWallet {
     async connect(): Promise<WalletConnectWalletInit> {
         const client = this._client ?? (await WalletConnectClient.init(this._options));
         const sessions = client.find(getConnectParams(this._network)).filter((s) => s.acknowledged);
+        const modal = new WalletConnectModal({
+            chains: [WalletConnectChainID.Mainnet, WalletConnectChainID.Devnet],
+            projectId: this._options.projectId ?? '',
+        });
         if (sessions.length) {
             // select last matching session
             this._session = sessions[sessions.length - 1];
             // We assign this variable only after we're sure we've received approval
             this._client = client;
-
             return {
                 publicKey: this.publicKey,
             };
         } else {
             const { uri, approval } = await client.connect(getConnectParams(this._network));
-            return new Promise((resolve, reject) => {
+            try {
                 if (uri) {
-                    QRCodeModal.open(uri, () => {
-                        reject(new QRCodeModalError());
-                    });
+                    await modal.openModal({ uri });
                 }
 
-                approval()
-                    .then((session) => {
-                        this._session = session;
-                        // We assign this variable only after we're sure we've received approval
-                        this._client = client;
+                const session = await approval();
+                this._session = session;
+                // We assign this variable only after we're sure we've received approval
+                this._client = client;
 
-                        resolve({ publicKey: this.publicKey });
-                    })
-                    .catch(reject)
-                    .finally(() => {
-                        QRCodeModal.close();
-                    });
-            });
+                return { publicKey: this.publicKey };
+            } catch (e) {
+                throw new QRCodeModalError();
+            } finally {
+                modal.closeModal();
+            }
         }
     }
 

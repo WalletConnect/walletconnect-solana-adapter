@@ -1,6 +1,6 @@
 {
     "name": "@jnwng/walletconnect-solana",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "license": "Apache-2.0",
     "type": "module",
     "sideEffects": false,
@@ -32,7 +32,7 @@
         "shx": "^0.3.4"
     },
     "dependencies": {
-        "@walletconnect/qrcode-modal": "^1.8.0",
+        "@walletconnect/modal": "^2.6.1",
         "@walletconnect/sign-client": "^2.7.2",
         "@walletconnect/utils": "^2.4.5",
         "bs58": "^5.0.0"
