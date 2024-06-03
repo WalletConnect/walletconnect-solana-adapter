@@ -12,7 +12,7 @@ export interface WalletConnectWalletAdapterConfig {
 }
 
 export enum WalletConnectChainID {
-    Mainnet = 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ',
+    Mainnet = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
     Devnet = 'solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K',
 }
 
