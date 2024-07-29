@@ -21,6 +21,7 @@ export class WalletConnectModal extends Web3ModalScaffold {
 	private universalProvider: Awaited<ReturnType<(typeof UniversalProvider)['init']>>
 	private requestedScope: string
 	private requestedNamespaces: Exclude<ConnectParams['optionalNamespaces'], undefined>
+	private _onSyncAccount: WalletConnectModal['syncAccount'] | undefined
 
 	public constructor(options: Web3ModalClientOptions) {
 		const { universalProvider, namespaces, ...w3mOptions } = options
@@ -104,8 +105,10 @@ export class WalletConnectModal extends Web3ModalScaffold {
 		])
 		this.syncAccount()
 		this.syncNetwork()
-		universalProvider.client.on('session_update', this.syncAccount.bind(this))
-		universalProvider.client.on('session_delete', this.syncAccount.bind(this))
+
+		this._onSyncAccount = this.syncAccount.bind(this)
+		universalProvider.client.on('session_update', this._onSyncAccount)
+		universalProvider.client.on('session_delete', this._onSyncAccount)
 	}
 
 	async disconnect() {
