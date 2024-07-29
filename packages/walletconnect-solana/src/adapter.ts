@@ -76,7 +76,7 @@ export class WalletConnectWalletAdapter extends BaseSignerWalletAdapter {
 			const { publicKey } = await this._wallet.connect()
 			this._publicKey = publicKey
 			this.emit('connect', publicKey)
-			this._wallet.client.on('session_delete', this.disconnect)
+			this._wallet.client.on('session_delete', this.disconnect.bind(this))
 		} catch (error: unknown) {
 			if ((error as Error).constructor.name === 'QRCodeModalError') throw new WalletWindowClosedError()
 			throw error
