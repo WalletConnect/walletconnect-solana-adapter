@@ -138,4 +138,36 @@ export class WalletConnectWalletAdapter extends BaseSignerWalletAdapter {
 			throw error
 		}
 	}
+
+	async signAndSendTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<string> {
+		try {
+			const wallet = this._wallet
+			if (!wallet) throw new WalletNotConnectedError()
+
+			try {
+				return await wallet.signAndSendTransaction(transaction)
+			} catch (error: unknown) {
+				throw new WalletSignTransactionError((error as Error)?.message, error)
+			}
+		} catch (error: unknown) {
+			this.emit('error', error as WalletError)
+			throw error
+		}
+	}
+
+	async signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]> {
+		try {
+			const wallet = this._wallet
+			if (!wallet) throw new WalletNotConnectedError()
+
+			try {
+				return await wallet.signAllTransactions(transactions)
+			} catch (error: unknown) {
+				throw new WalletSignTransactionError((error as Error)?.message, error)
+			}
+		} catch (error: unknown) {
+			this.emit('error', error as WalletError)
+			throw error
+		}
+	}
 }
