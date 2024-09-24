@@ -231,28 +231,40 @@ export class WalletConnectWallet {
 	}
 
 	async signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]> {
-		this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signAllTransactions)
+		try {
+			this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signAllTransactions)
 
-		const serializedTransactions = transactions.map((transaction) => this.serialize(transaction))
+			const serializedTransactions = transactions.map((transaction) => this.serialize(transaction))
 
-		const { transactions: serializedSignedTransactions } = await this.client.client.request<{
-			transactions: string[]
-		}>({
-			chainId: this._network,
-			topic: this.session.topic,
-			request: {
-				method: WalletConnectRPCMethods.signAllTransactions,
-				params: { transactions: serializedTransactions },
-			},
-		})
+			const { transactions: serializedSignedTransactions } = await this.client.client.request<{
+				transactions: string[]
+			}>({
+				chainId: this._network,
+				topic: this.session.topic,
+				request: {
+					method: WalletConnectRPCMethods.signAllTransactions,
+					params: { transactions: serializedTransactions },
+				},
+			})
 
-		return transactions.map((transaction, index) => {
-			if (isVersionedTransaction(transaction)) {
-				return this.deserialize(serializedSignedTransactions[index], true)
+			return transactions.map((transaction, index) => {
+				if (isVersionedTransaction(transaction)) {
+					return this.deserialize(serializedSignedTransactions[index], true)
+				}
+
+				return this.deserialize(serializedSignedTransactions[index])
+			}) as T[]
+		} catch (error) {
+			if (error instanceof WalletConnectFeatureNotSupportedError) {
+				const signedTransactions = []
+				for (const transaction of transactions) {
+					signedTransactions.push(await this.signTransaction(transaction))
+				}
+				return signedTransactions as T[]
 			}
 
-			return this.deserialize(serializedSignedTransactions[index])
-		}) as T[]
+			throw error
+		}
 	}
 
 	async initClient(options: SignClientTypes.Options) {
@@ -292,7 +304,14 @@ export class WalletConnectWallet {
 
 	private checkIfWalletSupportsMethod(method: WalletConnectRPCMethods) {
 		if (!this.session.namespaces['solana']?.methods.includes(method)) {
-			throw new Error(`WalletConnect Adapter - Method ${method} is not supported by the wallet`)
+			throw new WalletConnectFeatureNotSupportedError(method)
 		}
+	}
+}
+
+export class WalletConnectFeatureNotSupportedError extends Error {
+	constructor(method: WalletConnectRPCMethods) {
+		super(`WalletConnect Adapter - Method ${method} is not supported by the wallet`)
+		this.name = 'WalletConnectFeatureNotSupportedError'
 	}
 }
