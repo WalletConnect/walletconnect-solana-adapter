@@ -25,6 +25,8 @@ export enum WalletConnectChainID {
 export enum WalletConnectRPCMethods {
 	signTransaction = 'solana_signTransaction',
 	signMessage = 'solana_signMessage',
+	signAndSendTransaction = 'solana_signAndSendTransaction',
+	signAllTransactions = 'solana_signAllTransactions',
 }
 
 interface WalletConnectWalletInit {
@@ -137,6 +139,14 @@ export class WalletConnectWallet {
 		}
 	}
 
+	get session(): SessionTypes.Struct {
+		if (!this._session) {
+			throw new ClientNotInitializedError()
+		}
+
+		return this._session
+	}
+
 	get publicKey(): PublicKey {
 		if (this._UniversalProvider?.session && this._session) {
 			const { address } = parseAccountId(this._session.namespaces.solana.accounts[0])
@@ -148,66 +158,112 @@ export class WalletConnectWallet {
 	}
 
 	async signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T> {
-		if (this._UniversalProvider?.session && this._session) {
-			let rawTransaction: string
-			let legacyTransaction: Transaction | VersionedTransaction | undefined
+		this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signTransaction)
 
-			if (isVersionedTransaction(transaction)) {
-				// V0 transactions are serialized and passed in the `transaction` property
-				rawTransaction = Buffer.from(transaction.serialize()).toString('base64')
+		const isVersioned = isVersionedTransaction(transaction)
 
-				if (transaction.version === 'legacy') {
-					// For backwards-compatible, legacy transactions are spread in the params
-					legacyTransaction = Transaction.from(transaction.serialize())
-				}
-			} else {
-				rawTransaction = transaction
-					.serialize({
-						requireAllSignatures: false,
-						verifySignatures: false,
-					})
-					.toString('base64')
-				legacyTransaction = transaction
-			}
+		const legacyTransaction = isVersioned ? {} : transaction
 
-			const { signature } = await this._UniversalProvider.client.request<{ signature: string }>({
-				chainId: this._network,
-				topic: this._session.topic,
-				request: {
-					method: WalletConnectRPCMethods.signTransaction,
-					params: {
-						// Passing ...legacyTransaction is deprecated.
-						// All new clients should rely on the `transaction` parameter.
-						// The future versions will stop passing ...legacyTransaction.
-						...legacyTransaction,
-						// New base64-encoded serialized transaction request parameter
-						transaction: rawTransaction,
-					},
+		const { signature, transaction: signedSerializedTransaction } = await this.client.client.request<{
+			signature: string
+			transaction?: string
+		}>({
+			chainId: this._network,
+			topic: this.session.topic,
+			request: {
+				method: WalletConnectRPCMethods.signTransaction,
+				params: {
+					// Passing ...legacyTransaction is deprecated.
+					// All new clients should rely on the `transaction` parameter.
+					// The future versions will stop passing ...legacyTransaction.
+					...legacyTransaction,
+					// New base64-encoded serialized transaction request parameter
+					transaction: this.serialize(transaction),
 				},
-			})
-			transaction.addSignature(this.publicKey, Buffer.from(base58.decode(signature)))
+			},
+		})
 
-			return transaction
-		} else {
-			throw new ClientNotInitializedError()
+		if (signedSerializedTransaction) {
+			return this.deserialize(signedSerializedTransaction, isVersioned) as T
 		}
+
+		transaction.addSignature(this.publicKey, Buffer.from(base58.decode(signature)))
+
+		return transaction
 	}
 
 	async signMessage(message: Uint8Array): Promise<Uint8Array> {
-		if (this._UniversalProvider?.session && this._session) {
-			const { signature } = await this._UniversalProvider.client.request<{ signature: string }>({
-				// The network does not change the output of message signing, but this is a required parameter for SignClient
+		this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signMessage)
+
+		const { signature } = await this.client.client.request<{
+			signature: string
+		}>({
+			// The network does not change the output of message signing, but this is a required parameter for SignClient
+			chainId: this._network,
+			topic: this.session.topic,
+			request: {
+				method: WalletConnectRPCMethods.signMessage,
+				params: {
+					pubkey: this.publicKey.toString(),
+					message: base58.encode(message),
+				},
+			},
+		})
+
+		return base58.decode(signature)
+	}
+
+	async signAndSendTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<string> {
+		this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signAndSendTransaction)
+
+		const { signature } = await this.client.client.request<{
+			signature: string
+		}>({
+			chainId: this._network,
+			topic: this.session.topic,
+			request: {
+				method: WalletConnectRPCMethods.signAndSendTransaction,
+				params: { transaction: this.serialize(transaction) },
+			},
+		})
+
+		return signature
+	}
+
+	async signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]> {
+		try {
+			this.checkIfWalletSupportsMethod(WalletConnectRPCMethods.signAllTransactions)
+
+			const serializedTransactions = transactions.map((transaction) => this.serialize(transaction))
+
+			const { transactions: serializedSignedTransactions } = await this.client.client.request<{
+				transactions: string[]
+			}>({
 				chainId: this._network,
-				topic: this._session.topic,
+				topic: this.session.topic,
 				request: {
-					method: WalletConnectRPCMethods.signMessage,
-					params: { pubkey: this.publicKey.toString(), message: base58.encode(message) },
+					method: WalletConnectRPCMethods.signAllTransactions,
+					params: { transactions: serializedTransactions },
 				},
 			})
 
-			return base58.decode(signature)
-		} else {
-			throw new ClientNotInitializedError()
+			return transactions.map((transaction, index) => {
+				if (isVersionedTransaction(transaction)) {
+					return this.deserialize(serializedSignedTransactions[index], true)
+				}
+
+				return this.deserialize(serializedSignedTransactions[index])
+			}) as T[]
+		} catch (error) {
+			if (error instanceof WalletConnectFeatureNotSupportedError) {
+				const signedTransactions = []
+				for (const transaction of transactions) {
+					signedTransactions.push(await this.signTransaction(transaction))
+				}
+				return signedTransactions as T[]
+			}
+
+			throw error
 		}
 	}
 
@@ -232,5 +288,30 @@ export class WalletConnectWallet {
 				undefined
 			>,
 		})
+	}
+
+	private serialize(transaction: Transaction | VersionedTransaction): string {
+		return Buffer.from(transaction.serialize({ verifySignatures: false })).toString('base64')
+	}
+
+	private deserialize(serializedTransaction: string, versioned = false): Transaction | VersionedTransaction {
+		if (versioned) {
+			return VersionedTransaction.deserialize(Buffer.from(serializedTransaction, 'base64'))
+		}
+
+		return Transaction.from(Buffer.from(serializedTransaction, 'base64'))
+	}
+
+	private checkIfWalletSupportsMethod(method: WalletConnectRPCMethods) {
+		if (!this.session.namespaces['solana']?.methods.includes(method)) {
+			throw new WalletConnectFeatureNotSupportedError(method)
+		}
+	}
+}
+
+export class WalletConnectFeatureNotSupportedError extends Error {
+	constructor(method: WalletConnectRPCMethods) {
+		super(`WalletConnect Adapter - Method ${method} is not supported by the wallet`)
+		this.name = 'WalletConnectFeatureNotSupportedError'
 	}
 }
