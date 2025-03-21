@@ -282,7 +282,7 @@ export class WalletConnectWallet {
 
 		this._modal = new WalletConnectModal({
 			projectId: this._projectId,
-			universalProvider: this._UniversalProvider,
+			universalProvider: this._UniversalProvider as any,
 			namespaces: getConnectParams(this._network).optionalNamespaces as Exclude<
 				ConnectParams['optionalNamespaces'],
 				undefined
