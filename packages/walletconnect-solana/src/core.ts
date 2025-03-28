@@ -1,5 +1,4 @@
 import { Transaction, VersionedTransaction, PublicKey } from '@solana/web3.js'
-import type { WalletConnectModal } from '@walletconnect/solana-adapter-ui'
 import { UniversalProvider, type ConnectParams } from '@walletconnect/universal-provider'
 import type { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { parseAccountId } from '@walletconnect/utils'
@@ -7,6 +6,8 @@ import base58 from 'bs58'
 import { ClientNotInitializedError } from './errors.js'
 import { getChainsFromChainId, getDefaultChainFromSession } from './utils/chainIdPatch.js'
 import { WalletConnectionError } from '@solana/wallet-adapter-base'
+import type { AppKit } from '@reown/appkit/core'
+import { solana, solanaDevnet, solanaTestnet } from '@reown/appkit/networks'
 
 type UniversalProviderType = Awaited<ReturnType<typeof UniversalProvider.init>>
 
@@ -54,7 +55,7 @@ const isVersionedTransaction = (transaction: Transaction | VersionedTransaction)
 export class WalletConnectWallet {
 	private _UniversalProvider: UniversalProviderType | undefined
 	private _session: SessionTypes.Struct | undefined
-	private _modal: WalletConnectModal | undefined
+	private _modal: AppKit | undefined
 	private _projectId: string
 	private _network: WalletConnectChainID
 	private _ConnectQueueResolver: ((value: unknown) => void) | undefined
@@ -278,15 +279,15 @@ export class WalletConnectWallet {
 		if (!this._UniversalProvider)
 			throw new Error('WalletConnect Adapter - cannot init modal when Universal Provider is undefined')
 
-		const { WalletConnectModal } = await import('@walletconnect/solana-adapter-ui')
+		const { createAppKit } = await import('@reown/appkit/core')
 
-		this._modal = new WalletConnectModal({
+		this._modal = createAppKit({
 			projectId: this._projectId,
 			universalProvider: this._UniversalProvider,
-			namespaces: getConnectParams(this._network).optionalNamespaces as Exclude<
-				ConnectParams['optionalNamespaces'],
-				undefined
-			>,
+			manualWCControl: true,
+			networks: [
+				solana, solanaDevnet, solanaTestnet
+			],
 		})
 	}
 

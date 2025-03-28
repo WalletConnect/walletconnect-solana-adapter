@@ -22,19 +22,19 @@
 		"clean": "rm -rf dist",
 		"watch": "tsc --watch",
 		"build": "pnpm run clean && tsc",
-		"up:appkit": "pnpm i @web3modal/common@latest @web3modal/polyfills@latest @web3modal/scaffold@latest @web3modal/scaffold-utils@latest @web3modal/siwe@latest @web3modal/core@latest"
+		"up:appkit": "pnpm i @reown/appkit-common@latest @reown/appkit-polyfills@latest @reown/appkit@latest @reown/appkit-utils@latest @reown/appkit-siwe@latest @reown/appkit-controllers@latest"
 	},
 	"devDependencies": {
 		"@walletconnect/universal-provider": "2.15.0",
-		"typescript": "^5.5.2"
+		"typescript": "5.8.2"
 	},
 	"dependencies": {
-		"@web3modal/common": "5.1.0",
-		"@web3modal/core": "5.1.0",
-		"@web3modal/polyfills": "5.1.0",
-		"@web3modal/scaffold": "5.1.0",
-		"@web3modal/scaffold-utils": "5.1.0",
-		"@web3modal/siwe": "5.1.0",
+		"@reown/appkit-common": "1.7.1",
+		"@reown/appkit-controllers": "1.7.1",
+		"@reown/appkit-polyfills": "1.7.1",
+		"@reown/appkit": "1.7.1",
+		"@reown/appkit-utils": "1.7.1",
+		"@reown/appkit-siwe": "1.7.1",
 		"bs58": "5.0.0"
 	},
 	"peerDependencies": {
