@@ -1,4 +1,3 @@
 packages:
-  - 'packages/appkit-universal'
   - 'packages/walletconnect-solana'
   - 'playground'

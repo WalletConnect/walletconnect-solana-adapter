@@ -92,16 +92,12 @@ export class WalletConnectWallet {
 			try {
 				// Lazy load the modal
 				await this.initModal()
-				//@ts-ignore AllWallets view type missing.
-				this._modal?.open({ view: 'AllWallets' })
+				const params = getConnectParams(this._network)
+				this._modal?.open()
+				const session = await this._UniversalProvider?.connect(params)
+				this._modal?.close()
 				let unsubscribeFromModalState: (() => void) | undefined
-				const session: SessionTypes.Struct | undefined = await new Promise((res) => {
-					unsubscribeFromModalState = this._modal?.subscribeState(({ open }) => {
-						if (!open) {
-							res(this._UniversalProvider?.session)
-						}
-					})
-				})
+				
 				this._session = session
 				unsubscribeFromModalState?.()
 				if (!session) {
@@ -284,10 +280,7 @@ export class WalletConnectWallet {
 		this._modal = createAppKit({
 			projectId: this._projectId,
 			universalProvider: this._UniversalProvider,
-			manualWCControl: true,
-			networks: [
-				solana, solanaDevnet, solanaTestnet
-			],
+			networks: [solana, solanaDevnet, solanaTestnet],
 		})
 	}
 
