@@ -9,18 +9,25 @@
 		"clean:packages": "pnpm -F './packages/**' exec rm -rf dist",
 		"build:playground": "pnpm -F ./playground run build",
 		"dev:playground": "pnpm -F ./playground run dev",
-		"patch": "pnpm -F './packages/**' exec pnpm version patch",
-		"minor": "pnpm -F './packages/**' exec pnpm version minor",
-		"major": "pnpm -F './packages/**' exec pnpm version major",
-		"alpha": "pnpm -F './packages/**' exec pnpm version prerelease --preid alpha",
-		"beta": "pnpm -F './packages/**' exec pnpm version prerelease --preid beta",
-		"prerelease": "pnpm -F './packages/**' exec pnpm version prerelease",
-		"release:stable": "pnpm run build:packages && pnpm -F './packages/**' publish",
-		"release:alpha": "pnpm run build:packages && pnpm -F './packages/**' publish --tag alpha",
-		"release:beta": "pnpm run build:packages && pnpm -F './packages/**' publish --tag beta",
-		"release:canary": "pnpm run build:packages && pnpm -F './packages/**' publish --tag canary"
+		"changeset:pre": "changeset pre enter",
+		"changeset:pre:exit": "changeset pre exit",
+		"changeset": "changeset",
+		"changeset:version": "changeset version",
+		"changeset:publish": "pnpm publish:latest",
+		"publish:latest": "pnpm install; pnpm build; changeset publish",
+		"publish:alpha": "pnpm install; pnpm build; changeset publish --tag alpha",
+		"publish:beta": "pnpm install; pnpm build; changeset publish --tag beta",
+		"publish:canary": "pnpm install; pnpm build; changeset publish --tag canary"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.2"
+		"@biomejs/biome": "1.8.2",
+		"@changesets/assemble-release-plan": "6.0.6",
+		"@changesets/changelog-github": "0.5.1",
+		"@changesets/cli": "2.28.1"
+	},
+	"pnpm": {
+		"patchedDependencies": {
+			"@changesets/assemble-release-plan@6.0.6": "patches/@changesets__assemble-release-plan@6.0.6.patch"
+		}
 	}
 }

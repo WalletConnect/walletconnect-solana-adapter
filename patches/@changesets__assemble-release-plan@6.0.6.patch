@@ -1,0 +1,13 @@
+diff --git a/src/index.ts b/src/index.ts
+index 33dca862a2402768e3f2d0b533b744cd10dd4ff9..0092f604ab6a1eb9b5c00dafd087655d71e77f73 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -25,7 +25,7 @@ type SnapshotReleaseParameters = {
+ function getPreVersion(version: string) {
+   let parsed = semverParse(version)!;
+   let preVersion =
+-    parsed.prerelease[1] === undefined ? -1 : parsed.prerelease[1];
++    parsed?.prerelease?.[1] === undefined ? -1 : parsed?.prerelease?.[1];
+   if (typeof preVersion !== "number") {
+     throw new InternalError("preVersion is not a number");
+   }
