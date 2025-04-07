@@ -16,6 +16,7 @@
 		"@solana/wallet-adapter-react": "^0.15.35",
 		"@solana/wallet-adapter-react-ui": "^0.9.35",
 		"@walletconnect/solana-adapter": "workspace: *",
+		"@reown/appkit-polyfills": "1.7.2",
 		"@solana/web3.js": "^1.78.0",
 		"bs58": "5.0.0",
 		"buffer": "^6.0.3",

@@ -36,7 +36,6 @@
 		"@solana/web3.js": "1.98.0",
 		"@walletconnect/types": "2.19.0",
 		"@reown/appkit": "1.7.2",
-		"@reown/appkit-polyfills": "1.7.2",
 		"typescript": "^5.5.2"
 	},
 	"dependencies": {
