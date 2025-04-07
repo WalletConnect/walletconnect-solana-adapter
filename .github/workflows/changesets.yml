@@ -58,7 +58,7 @@ jobs:
         run: |
           npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
           git reset --hard origin/main
-          pnpm install
+          pnpm install --no-frozen-lockfile
           pnpm changeset:pre ${{ github.sha }}
           pnpm changeset:version
           pnpm changeset:pre:exit
