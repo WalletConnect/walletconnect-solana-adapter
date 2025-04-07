@@ -12,7 +12,7 @@ importers:
         specifier: 1.8.2
         version: 1.8.2
 
-  packages/wallet-connect-solana:
+  packages/walletconnect-solana:
     dependencies:
       '@walletconnect/universal-provider':
         specifier: 2.19.0
@@ -27,6 +27,9 @@ importers:
       '@reown/appkit':
         specifier: 1.7.2
         version: 1.7.2(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.2(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(react@18.3.1)(utf-8-validate@5.0.10)))(@types/react@18.3.20)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@reown/appkit-polyfills':
+        specifier: 1.7.2
+        version: 1.7.2
       '@solana/wallet-adapter-base':
         specifier: ^0.9.23
         version: 0.9.24(@solana/web3.js@1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
@@ -62,7 +65,7 @@ importers:
         version: 1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@walletconnect/solana-adapter':
         specifier: 'workspace: *'
-        version: link:../packages/wallet-connect-solana
+        version: link:../packages/walletconnect-solana
       bs58:
         specifier: 5.0.0
         version: 5.0.0

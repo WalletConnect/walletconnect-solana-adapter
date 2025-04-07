@@ -3,12 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { SolanaContext } from './SolanaContext.tsx'
-
-import { Buffer } from 'buffer'
-
-if (typeof window !== 'undefined' && window.Buffer === undefined) {
-	window.Buffer = Buffer
-}
+import '@reown/appkit-polyfills'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
