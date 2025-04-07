@@ -109,7 +109,6 @@ export class WalletConnectWalletAdapter extends BaseSignerWalletAdapter {
       this._publicKey = null
 
       try {
-        console.log('WalletConnectWalletAdapter: disconnect try', wallet.client.session)
         if (wallet.client.session) {
           await wallet.disconnect()
         }

@@ -82,7 +82,6 @@ export class WalletConnectWallet {
   }
 
   async disconnect() {
-    console.log('WalletConnectWalletAdapter Core: disconnect', this._UniversalProvider?.session)
     if (this._UniversalProvider?.session) {
       await this.initModal()
       if (!this._modal) {
