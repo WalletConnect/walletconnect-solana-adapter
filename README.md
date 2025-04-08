@@ -1,5 +1,7 @@
 # WalletConnect Solana Adapter - Core
 
+[Try it!](https://walletconnect-solana.vercel.app/)
+
 ## How to run this repo?
 
 1. Install dependencies
