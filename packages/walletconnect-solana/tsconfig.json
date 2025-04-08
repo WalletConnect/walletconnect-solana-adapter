@@ -3,7 +3,7 @@
 		"declarationDir": "dist/types",
 		"target": "ESNext",
 		"module": "NodeNext",
-		"moduleResolution": "node16",
+		"moduleResolution": "NodeNext",
 		"esModuleInterop": true,
 		"isolatedModules": true,
 		"noEmitOnError": true,
