@@ -3,6 +3,9 @@ import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import type { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { UniversalProvider } from '@walletconnect/universal-provider'
 import { parseAccountId } from '@walletconnect/utils'
+import { createAppKit } from '@reown/appkit/core'
+import { solana, solanaDevnet, solanaTestnet } from '@reown/appkit/networks'
+
 import base58 from 'bs58'
 
 import type { AppKit } from '@reown/appkit/core'
@@ -254,8 +257,6 @@ export class WalletConnectWallet {
       )
     }
 
-    const { createAppKit } = await import('@reown/appkit/core')
-    const { solana, solanaDevnet, solanaTestnet } = await import('@reown/appkit/networks')
 
     this._modal = createAppKit({
       projectId: this._projectId,
