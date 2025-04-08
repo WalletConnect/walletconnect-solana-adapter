@@ -6,7 +6,7 @@ import { parseAccountId } from '@walletconnect/utils'
 import base58 from 'bs58'
 
 import type { AppKit } from '@reown/appkit/core'
-import { solana, solanaDevnet, solanaTestnet } from '@reown/appkit/networks'
+
 
 import { WalletConnectRPCMethods } from './constants.js'
 import type { WalletConnectChainID } from './constants.js'
@@ -255,6 +255,7 @@ export class WalletConnectWallet {
     }
 
     const { createAppKit } = await import('@reown/appkit/core')
+    const { solana, solanaDevnet, solanaTestnet } = await import('@reown/appkit/networks')
 
     this._modal = createAppKit({
       projectId: this._projectId,

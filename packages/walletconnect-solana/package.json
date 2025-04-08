@@ -3,7 +3,6 @@
 	"version": "0.0.6",
 	"license": "Apache-2.0",
 	"type": "module",
-	"sideEffects": false,
 	"main": "./dist/adapter.js",
 	"types": "./dist/types/adapter.d.ts",
 	"exports": {
