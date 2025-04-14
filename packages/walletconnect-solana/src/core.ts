@@ -75,7 +75,6 @@ export class WalletConnectWallet {
     const signal = controller.signal
 
     this._modal?.subscribeState((state) => {
-      console.log('>> Modal state changed', state.open)
       if (!state.open) {
         controller.abort(new QRCodeModalError())
       }
