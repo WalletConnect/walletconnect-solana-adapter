@@ -76,6 +76,7 @@ export class WalletConnectWalletAdapter extends BaseSignerWalletAdapter {
       if (this.connected || this.connecting) {
         return
       }
+
       if (this._readyState !== WalletReadyState.Loadable) {
         throw new WalletNotReadyError()
       }
@@ -93,9 +94,10 @@ export class WalletConnectWalletAdapter extends BaseSignerWalletAdapter {
       this.emit('connect', publicKey)
       this._wallet.client.on('session_delete', this._onDisconnect)
     } catch (error: unknown) {
-      if ((error as Error).constructor.name === 'QRCodeModalError') {
+      if ((error as Error).constructor.name === 'QRCodeModalError' || error instanceof Error && error.name === 'QRCodeModalError') {
         throw new WalletWindowClosedError()
       }
+      this._connecting = false
       throw error
     } finally {
       this._connecting = false

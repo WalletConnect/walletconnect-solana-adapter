@@ -21,6 +21,7 @@ import type {
   WalletConnectWalletInit
 } from './types.js'
 import { getConnectParams, getDefaultChainFromSession } from './utils.js'
+import { QRCodeModalError } from './errors/QRCodeModalError.js'
 
 export class WalletConnectWallet {
   private _UniversalProvider: UniversalProviderType | undefined
@@ -68,20 +69,44 @@ export class WalletConnectWallet {
     await this.initModal()
     const params = getConnectParams(this._network)
     this._modal?.open()
-    const session = await this._UniversalProvider?.connect(params)
-    this._modal?.close()
-    this._session = session
-    if (!session) {
-      throw new WalletConnectionError()
-    }
-    const defaultNetwork = getDefaultChainFromSession(
-      session,
-      this._network
-    ) as WalletConnectChainID
-    this._network = defaultNetwork
-    this._UniversalProvider?.setDefaultChain(defaultNetwork)
 
-    return { publicKey: this.publicKey }
+    // Create an abort controller to handle modal close
+    const controller = new AbortController()
+    const signal = controller.signal
+
+    this._modal?.subscribeState((state) => {
+      console.log('>> Modal state changed', state.open)
+      if (!state.open) {
+        controller.abort(new QRCodeModalError())
+      }
+    })
+    
+    try {
+      const session = await Promise.race([
+        this._UniversalProvider?.connect(params),
+        new Promise<never>((_, reject) => {
+          signal.addEventListener('abort', () => {
+            reject(signal.reason)
+          })
+        })
+      ])
+      this._modal?.close()
+      this._session = session
+      if (!session) {
+        throw new WalletConnectionError()
+      }
+      const defaultNetwork = getDefaultChainFromSession(
+        session,
+        this._network
+      ) as WalletConnectChainID
+      this._network = defaultNetwork
+      this._UniversalProvider?.setDefaultChain(defaultNetwork)
+
+      return { publicKey: this.publicKey }
+    } catch (error) {
+      this._modal?.close()
+      throw error
+    }
   }
 
   async disconnect() {
