@@ -38,9 +38,9 @@
 		"typescript": "^5.5.2"
 	},
 	"dependencies": {
-		"@reown/appkit": "1.8.18",
-		"@walletconnect/universal-provider": "2.23.2",
-		"@walletconnect/utils": "2.23.2",
+		"@reown/appkit": "1.8.19",
+		"@walletconnect/universal-provider": "2.23.7",
+		"@walletconnect/utils": "2.23.7",
 		"bs58": "6.0.0"
 	},
 	"peerDependencies": {
