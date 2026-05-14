@@ -1,5 +1,12 @@
 # @walletconnect/solana-adapter
 
+## 0.0.9
+
+### Patch Changes
+
+- 9c83ac3: Bump @walletconnect/universal-provider and @walletconnect/utils package versions
+- 8d8b96e: Updates appkit version to 1.7.3
+
 ## 0.0.8
 
 ### Patch Changes
