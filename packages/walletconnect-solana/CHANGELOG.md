@@ -1,5 +1,11 @@
 # @walletconnect/solana-adapter
 
+## 0.0.9
+
+### Patch Changes
+
+- 8d8b96e: Updates appkit version to 1.7.3
+
 ## 0.0.8
 
 ### Patch Changes
